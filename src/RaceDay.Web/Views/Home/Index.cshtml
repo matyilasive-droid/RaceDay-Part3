@@ -1,0 +1,40 @@
+@model HomeVm
+@{ ViewData["Title"] = "Upcoming events"; }
+<section class="rd-hero mb-4">
+  <h1 class="rd-h display-4">FIND YOUR NEXT <span>START LINE</span></h1>
+  <p class="lead mb-0">Browse upcoming races, pick your category and enter in a tap.</p>
+</section>
+
+@{ ViewBag.Error = Model.Error; }
+<partial name="_ApiError" />
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+  <div class="col-md-5"><input name="search" value="@Model.Search" class="form-control" placeholder="Search by name or location" /></div>
+  <div class="col-md-3">
+    <select name="type" class="form-select">
+      <option value="">All event types</option>
+      @foreach (var t in Model.Types) { <option value="@t" selected="@(t == Model.Type)">@t</option> }
+    </select>
+  </div>
+  @if (Model.Categories.Any())
+  {
+    <div class="col-md-2">
+      <select name="category" class="form-select">
+        <option value="">All categories</option>
+        @foreach (var c in Model.Categories) { <option value="@c" selected="@(c == Model.Category)">@c</option> }
+      </select>
+    </div>
+  }
+  <div class="col-md-2 d-grid"><button class="btn btn-rd" type="submit">Search</button></div>
+</form>
+
+@if (!Model.Events.Any())
+{
+  <div class="alert alert-secondary">No upcoming events match your search.</div>
+}
+<div class="row g-4">
+  @foreach (var e in Model.Events)
+  {
+    <div class="col-sm-6 col-lg-4"><partial name="_EventCard" model="e" /></div>
+  }
+</div>

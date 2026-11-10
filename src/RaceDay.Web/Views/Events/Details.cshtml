@@ -1,0 +1,43 @@
+@model EventDetailsVm
+@{
+    ViewData["Title"] = Model.Event.Name;
+    var user = Context.Session.GetUser();
+    var e = Model.Event;
+}
+<div class="row g-4">
+  <div class="col-lg-8">
+    @if (!string.IsNullOrEmpty(e.BannerUrl)) { <img src="@e.BannerUrl" class="rd-banner-lg mb-3" alt="@e.Name banner" /> }
+    <span class="rd-chip">@e.EventType</span>
+    <h1 class="rd-h display-5 mt-2">@e.Name</h1>
+    <p class="text-muted">📅 @e.Date.ToString("dddd d MMMM yyyy, HH:mm") &nbsp; 📍 @e.Location &nbsp; 🏁 @e.DistanceKm km</p>
+    <p style="white-space:pre-line">@e.Description</p>
+  </div>
+  <div class="col-lg-4">
+    <div class="card rd-card p-4">
+      <h2 class="rd-h h4">Enter this event</h2>
+      @if (user is null)
+      {
+        <p>Sign in as a participant to enter.</p>
+        <a class="btn btn-rd w-100" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Sign in</a>
+      }
+      else if (user.IsOrganiser)
+      {
+        <p class="mb-0">Organiser accounts can't enter events. Use a participant account to enter.</p>
+      }
+      else
+      {
+        <form asp-controller="Events" asp-action="Enter" asp-route-id="@e.Id" method="post">
+          @if (Model.Categories.Any())
+          {
+            <label class="form-label" for="categoryId">Category</label>
+            <select id="categoryId" name="categoryId" class="form-select mb-3" required>
+              <option value="">Choose your category…</option>
+              @foreach (var c in Model.Categories) { <option value="@c.Id">@c.Name (@c.Type)</option> }
+            </select>
+          }
+          <button class="btn btn-rd w-100" type="submit">Enter Event</button>
+        </form>
+      }
+    </div>
+  </div>
+</div>

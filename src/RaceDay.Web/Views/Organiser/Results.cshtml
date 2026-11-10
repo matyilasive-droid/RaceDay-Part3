@@ -1,0 +1,31 @@
+@model EventPageVm
+@{ ViewData["Title"] = "Results"; }
+<a asp-action="Dashboard" class="small">← Dashboard</a>
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="rd-h">Results <small class="text-muted">· @Model.Event.Name</small></h1>
+  <form asp-action="PublishResults" asp-route-id="@Model.Event.Id" method="post">
+    <button class="btn btn-rd" type="submit">Publish results</button>
+  </form>
+</div>
+<partial name="_ApiError" />
+@if (!Model.Enrolments.Any()) { <div class="alert alert-secondary">No participants to record results for.</div> }
+else
+{
+  <ul class="list-group rd-card">
+  @foreach (var e in Model.Enrolments)
+  {
+    var existing = Model.Results.FirstOrDefault(r => r.EnrolmentId == e.Id);
+    <li class="list-group-item">
+      <form asp-action="SaveResult" asp-route-id="@Model.Event.Id" method="post" class="row g-2 align-items-end">
+        <input type="hidden" name="enrolmentId" value="@e.Id" />
+        <div class="col-md-4"><strong>@e.ParticipantName</strong><div class="small text-muted">@(e.CategoryName ?? "No category")</div></div>
+        <div class="col-md-3"><label class="form-label small mb-0">Finish time (hh:mm:ss)</label>
+          <input name="finishTime" class="form-control" placeholder="01:23:45" pattern="\d{1,2}:\d{2}:\d{2}" value="@(existing is null ? "" : Format.Time(existing.FinishTime))" required /></div>
+        <div class="col-md-2"><label class="form-label small mb-0">Position</label>
+          <input name="position" type="number" min="1" class="form-control" value="@(existing?.Position)" required /></div>
+        <div class="col-md-3 d-grid"><button class="btn btn-outline-dark" type="submit">@(existing is null ? "Save result" : "Update")</button></div>
+      </form>
+    </li>
+  }
+  </ul>
+}

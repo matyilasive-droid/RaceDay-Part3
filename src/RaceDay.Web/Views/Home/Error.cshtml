@@ -1,0 +1,6 @@
+@{ ViewData["Title"] = "Something went wrong"; int code = ViewBag.Code ?? 500; }
+<div class="text-center py-5">
+  <h1 class="rd-h display-4">@(code == 404 ? "Page not found" : "Something went wrong")</h1>
+  <p class="lead">@(code == 404 ? "That page doesn't exist." : "We hit a snag. Please try again in a moment.")</p>
+  <a class="btn btn-rd" asp-controller="Home" asp-action="Index">Back to events</a>
+</div>

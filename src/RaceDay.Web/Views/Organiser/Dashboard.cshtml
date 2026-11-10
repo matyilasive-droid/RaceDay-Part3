@@ -1,0 +1,48 @@
+@model List<EventDto>
+@{
+    ViewData["Title"] = "Organiser Dashboard";
+    var upcoming = Model.Where(e => e.Date >= DateTime.Today).ToList();
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="rd-h mb-0">Organiser Dashboard</h1>
+  <a class="btn btn-rd" asp-action="CreateEvent">+ Create event</a>
+</div>
+<partial name="_ApiError" />
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="rd-stat"><div class="rd-stat-n">@Model.Count</div><div>Events created</div></div></div>
+  <div class="col-md-4"><div class="rd-stat"><div class="rd-stat-n">@Model.Sum(e => e.EnrolmentCount)</div><div>Total enrolments</div></div></div>
+  <div class="col-md-4"><div class="rd-stat"><div class="rd-stat-n">@upcoming.Count</div><div>Upcoming events</div></div></div>
+</div>
+
+@if (!Model.Any())
+{
+  <div class="alert alert-secondary">No events yet. Create your first one!</div>
+}
+else
+{
+  <div class="table-responsive card rd-card">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Event</th><th>Date</th><th>Enrolled</th><th class="text-end">Manage</th></tr></thead>
+      <tbody>
+      @foreach (var e in Model)
+      {
+        <tr>
+          <td><strong>@e.Name</strong><div class="small text-muted">@e.Location · @e.DistanceKm km</div></td>
+          <td>@e.Date.ToString("d MMM yyyy")@if (e.Date >= DateTime.Today) { <span class="badge status-confirmed ms-1">Upcoming</span> }</td>
+          <td>@e.EnrolmentCount</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-dark" asp-action="EditEvent" asp-route-id="@e.Id">Edit</a>
+            <a class="btn btn-sm btn-outline-dark" asp-action="Categories" asp-route-id="@e.Id">Categories</a>
+            <a class="btn btn-sm btn-outline-dark" asp-action="Enrolments" asp-route-id="@e.Id">Enrolments</a>
+            <a class="btn btn-sm btn-outline-dark" asp-action="Results" asp-route-id="@e.Id">Results</a>
+            <form asp-action="DeleteEvent" asp-route-id="@e.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this event?');">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}

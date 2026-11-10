@@ -1,0 +1,4 @@
+@if (ViewBag.Error is string apiErr && !string.IsNullOrEmpty(apiErr))
+{
+    <div class="alert alert-warning">@apiErr</div>
+}

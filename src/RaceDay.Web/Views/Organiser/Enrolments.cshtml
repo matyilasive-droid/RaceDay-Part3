@@ -1,0 +1,20 @@
+@model EventPageVm
+@{ ViewData["Title"] = "Enrolments"; }
+<a asp-action="Dashboard" class="small">← Dashboard</a>
+<h1 class="rd-h">Enrolments <small class="text-muted">· @Model.Event.Name</small></h1>
+<partial name="_ApiError" />
+@if (!Model.Enrolments.Any()) { <div class="alert alert-secondary">Nobody has entered yet.</div> }
+else
+{
+  <div class="table-responsive card rd-card">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Participant</th><th>Category</th><th>Entered</th><th>Status</th></tr></thead>
+      <tbody>
+      @foreach (var e in Model.Enrolments)
+      {
+        <tr><td>@e.ParticipantName</td><td>@(e.CategoryName ?? "—")</td><td>@e.EnrolledAt.ToString("d MMM yyyy")</td><td><partial name="_StatusBadge" model="e.Status" /></td></tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}

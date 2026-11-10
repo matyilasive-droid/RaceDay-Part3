@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+appsettings.Development.json

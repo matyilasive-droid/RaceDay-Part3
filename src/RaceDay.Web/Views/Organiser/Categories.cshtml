@@ -1,0 +1,34 @@
+@model EventPageVm
+@{ ViewData["Title"] = "Categories"; }
+<a asp-action="Dashboard" class="small">← Dashboard</a>
+<h1 class="rd-h">Categories <small class="text-muted">· @Model.Event.Name</small></h1>
+<div class="row g-4">
+  <div class="col-md-7">
+    @if (!Model.Categories.Any()) { <div class="alert alert-secondary">No categories yet.</div> }
+    else
+    {
+      <ul class="list-group rd-card">
+        @foreach (var c in Model.Categories)
+        {
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong>@c.Name</strong> <span class="rd-chip ms-2">@c.Type</span></span>
+            <form asp-action="DeleteCategory" asp-route-id="@Model.Event.Id" asp-route-categoryId="@c.Id" method="post" class="m-0">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+            </form>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+  <div class="col-md-5">
+    <div class="card rd-card p-3">
+      <h2 class="rd-h h5">Add category</h2>
+      <form asp-action="AddCategory" asp-route-id="@Model.Event.Id" method="post">
+        <div class="mb-2"><label class="form-label" for="Name">Name</label><input id="Name" name="Name" class="form-control" placeholder="e.g. Under 18, 10K, Masters 40+" required maxlength="60" /></div>
+        <div class="mb-3"><label class="form-label" for="Type">Type</label>
+          <select id="Type" name="Type" class="form-select"><option>Age</option><option>Distance</option></select></div>
+        <button class="btn btn-rd" type="submit">Add</button>
+      </form>
+    </div>
+  </div>
+</div>

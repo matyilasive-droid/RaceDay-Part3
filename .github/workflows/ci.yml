@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build Part 2 API
+        run: |
+          if ls src/RaceDay.Api/*.csproj >/dev/null 2>&1; then
+            dotnet build src/RaceDay.Api --configuration Release
+          else
+            echo "::warning::No Part 2 API project found in src/RaceDay.Api"
+          fi
+
+      - name: Restore MVC app
+        run: dotnet restore RaceDay.sln
+
+      - name: Build MVC app
+        run: dotnet build RaceDay.sln --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test RaceDay.sln --configuration Release --no-build --verbosity normal
+
+      - name: Build Docker image
+        run: docker build -t raceday-web .
