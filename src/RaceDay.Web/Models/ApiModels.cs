@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 namespace RaceDay.Web.Models;
 
 // DTOs shaped like the Part 2 API's JSON responses. Adjust here if your API differs.
@@ -5,38 +6,51 @@ namespace RaceDay.Web.Models;
 public class AuthResponse
 {
     public string Token { get; set; } = "";
+    [JsonPropertyName("userID")]
     public string UserId { get; set; } = "";
+    [JsonPropertyName("name")]
     public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
     public string Role { get; set; } = "Participant";
-    public string? ProfileImageUrl { get; set; }
 }
 
 public class CategoryDto
 {
+    [JsonPropertyName("categoryID")]
     public int Id { get; set; }
     public int EventId { get; set; }
     public string Name { get; set; } = "";
-    public string Type { get; set; } = "Age"; // Age | Distance
+    public decimal DistanceKm { get; set; }
+    public int MaxParticipants { get; set; }
+    public decimal EntryFee { get; set; }
 }
 
 public class EventDto
 {
+    [JsonPropertyName("eventID")]
     public int Id { get; set; }
+    [JsonPropertyName("eventName")]
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
+    [JsonPropertyName("eventDate")]
     public DateTime Date { get; set; }
+    [JsonPropertyName("venueID")]
+    public int VenueId { get; set; }
+    [JsonPropertyName("venue")]
     public string Location { get; set; } = "";
     public decimal DistanceKm { get; set; }
     public string EventType { get; set; } = "";
     public string? BannerUrl { get; set; }
     public int EnrolmentCount { get; set; }
+    [JsonPropertyName("organiserID")]
     public string? OrganiserId { get; set; }
+    public DateTime? CreatedAt { get; set; }
     public List<CategoryDto> Categories { get; set; } = new();
 }
 
 public class EnrolmentDto
 {
+    [JsonPropertyName("enrolmentID")]
     public int Id { get; set; }
     public int EventId { get; set; }
     public string EventName { get; set; } = "";
@@ -51,6 +65,7 @@ public class EnrolmentDto
 
 public class ResultDto
 {
+    [JsonPropertyName("resultID")]
     public int Id { get; set; }
     public int EnrolmentId { get; set; }
     public int EventId { get; set; }
@@ -66,13 +81,15 @@ public class ResultDto
 
 public class ProfileDto
 {
-    public string FullName { get; set; } = "";
+    public string FirstName { get; set; } = "";
+    public string LastName { get; set; } = "";
     public string Email { get; set; } = "";
-    public string? PhoneNumber { get; set; }
-    public DateTime? DateOfBirth { get; set; }
-    public string? ProfileImageUrl { get; set; }
+    public string Role { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
 }
 
+
+/// <summary>Generic response model used by the reusable multipart API client.</summary>
 public class UploadResponse
 {
     public string Url { get; set; } = "";
