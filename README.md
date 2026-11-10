@@ -1,102 +1,90 @@
-# RaceDay — Part 3 (ASP.NET Core MVC front end)
+# RaceDay — Part 3 MVC + Part 2 API
 
-An ASP.NET Core 8 MVC front end for the RaceDay event platform. It calls the separately deployed REST API over HTTP.
-The uploaded Part 3 ZIP does **not** contain the API implementation or database project; the API plan is used here as
-the client contract. There is no local DbContext or direct database connection in this MVC application.
+This repository now includes the supplied Part 2 ASP.NET Core REST API source, the Part 3 ASP.NET Core MVC frontend, and both test projects. The MVC frontend is designed to use HTTP API calls; it does not contain an Entity Framework context or a direct database connection.
 
-| | |
-|---|---|
-| CI status | ![CI](https://github.com/<YOUR-USER>/<YOUR-REPO>/actions/workflows/ci.yml/badge.svg) |
-| CI screenshot | `docs/ci-green-build.png` *(add your screenshot here)* |
-| Demo video (unlisted) | `<PASTE YOUTUBE LINK>` |
+## Solution structure
 
-## Folder structure
-
-```
+```text
 RaceDay/
-├── .github/workflows/ci.yml        # builds API + MVC, runs tests, builds Docker image
-├── Dockerfile                      # multi-stage build for the MVC app
+├── .github/workflows/ci.yml
+├── Dockerfile                         # MVC web container
 ├── RaceDay.sln
 ├── src/
-│   ├── RaceDay.Api/                # ← your Part 2 API project goes here
-│   └── RaceDay.Web/                # MVC app
-│       ├── Controllers/            # Account, Home, Events, MyEnrolments, MyResults, Profile, Organiser
-│       ├── Filters/                # SessionAuthorize (login + role enforcement)
-│       ├── Services/               # ApiClient (HTTP only), ApiRoutes, session helpers
-│       ├── Models/                 # API DTOs + view models
-│       ├── Helpers/                # formatting (ordinals), upload validation
-│       ├── Views/                  # Razor views (role-aware layout)
-│       └── wwwroot/css/site.css    # RaceDay brand theme
-└── tests/RaceDay.Web.Tests/        # xUnit tests
+│   ├── RaceDay.Api/                   # supplied Part 2 API + API Dockerfile
+│   └── RaceDay.Web/                   # Part 3 MVC frontend
+├── tests/
+│   ├── RaceDay.Api.Tests/
+│   └── RaceDay.Web.Tests/
+└── docs/                              # rubric and API verification notes
 ```
 
-## Run locally (VS Code)
+## Stage 1 — local setup
 
-Prerequisites: [.NET 8 SDK](https://dotnet.microsoft.com/download), VS Code + C# Dev Kit, and the Part 2 API running.
+Follow [`docs/LOCAL-DEVELOPMENT-SETUP.md`](docs/LOCAL-DEVELOPMENT-SETUP.md) first. It covers VS Code, both required .NET SDKs, SSMS database verification, the API connection string, and the correct local startup ports. The API HTTP profile runs at `http://localhost:5291`; the MVC profile runs at `http://localhost:5080`.
+
+## Prerequisites
+
+- .NET 8 SDK for the MVC application and .NET 10 SDK for the supplied API/API tests.
+- SQL Server with the RaceDay schema expected by `RaceDayProg6212Context`.
+- A configured SQL Server connection string for the API.
+
+Set the API connection string before starting it. For PowerShell:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection="Server=localhost;Database=RaceDayProg6212;Trusted_Connection=True;TrustServerCertificate=True;"
+dotnet run --project src/RaceDay.Api --launch-profile http
+```
+
+Then start the MVC application in a second terminal:
+
+```powershell
+dotnet run --project src/RaceDay.Web --launch-profile RaceDay.Web
+```
+
+The MVC configuration points to the API HTTP launch profile at `http://localhost:5291/`. The API's database must already exist; this archive does not include a database backup or migration script.
+
+## Build and test
 
 ```bash
-# Start the separately supplied API first (note its URL, e.g. http://localhost:5000).
-# Configure Api:BaseUrl in src/RaceDay.Web/appsettings.json or Api__BaseUrl environment variable.
-dotnet run --project src/RaceDay.Web
-# open http://localhost:5080
+dotnet restore RaceDay.sln
+dotnet build RaceDay.sln --configuration Release
+dotnet test RaceDay.sln --configuration Release
 ```
 
-## Run with Docker
+The GitHub Actions workflow installs both SDK versions, restores and builds the complete solution, runs both test projects, and builds both Docker images. A green workflow has not been verified from this local archive; push the repository and inspect the Actions run.
+
+## Docker
+
+Build the MVC and API images separately:
 
 ```bash
 docker build -t raceday-web .
-docker run --rm -p 8080:8080 -e Api__BaseUrl=http://host.docker.internal:5000/ raceday-web
-# open http://localhost:8080
+docker build -f src/RaceDay.Api/Dockerfile -t raceday-api .
 ```
 
-* `Api__BaseUrl` must be reachable **from inside the container** (`host.docker.internal` reaches an API running on
-  your machine; on Linux add `--add-host=host.docker.internal:host-gateway`). If the API is deployed (e.g. Azure App Service)
-  use its public URL.
-* Behaviour is identical to local runs – the only difference is the configured API URL.
-
-## Tests
+Run the API with a reachable SQL Server connection string:
 
 ```bash
-dotnet test RaceDay.sln
+docker run --rm -p 8081:8081 -e ConnectionStrings__DefaultConnection="<SQL_SERVER_CONNECTION_STRING>" raceday-api
 ```
 
-Covers: API client (auth header, error mapping, uploads), session login/logout, redirect safety, role enforcement
-(filter + controller attributes), participant/organiser controller flows, result-entry validation, upload validation.
+Run the MVC frontend and point it to the API URL reachable from inside the container:
 
-## Architecture
-
-```
-Browser ⇄ MVC (this repo) ──HTTP + JWT──▶ Part 2 API ──▶ Database
-                                              └────────▶ Azure Blob Storage
+```bash
+docker run --rm -p 8080:8080 -e Api__BaseUrl="http://host.docker.internal:8081/" raceday-web
 ```
 
-* **Auth/session** – `AccountController` posts credentials to the API; the returned JWT, user id, name and role are stored
-  in server-side session (HttpOnly cookie holds only the session id). Logout clears the session and redirects to login.
-* **Access control** – `[SessionAuthorize(Role = "...")]` redirects anonymous users to login and wrong-role users to *Access denied*.
-  Anti-forgery validation is applied to every POST.
-* **Blob Storage** – images are uploaded as multipart to the API (`/banner`, `/picture`); the API stores them in Azure Blob,
-  saves the URL, and the MVC views render that URL. The MVC app never talks to Azure directly.
+On Linux, add `--add-host=host.docker.internal:host-gateway` to the MVC `docker run` command when the API is running on the host.
 
-## API plan alignment
+## Important integration verification
 
-The client route helpers in `src/RaceDay.Web/Services/ApiRoutes.cs` follow the supplied `API PLAN.pdf`, Section B.
-The route-by-route mapping, request field alignment, plan ambiguities, and optional extensions are documented in
-[`docs/API-PLAN-ALIGNMENT.md`](docs/API-PLAN-ALIGNMENT.md). Use [`docs/API-VERIFICATION-CHECKLIST.md`](docs/API-VERIFICATION-CHECKLIST.md)
-to test the actual API in Swagger.
+The Part 2 API source is now included in the solution and CI build. However, inclusion is not the same as end-to-end compatibility. The supplied API currently uses cookie authentication and controller routes based on `[controller]`, while the MVC client expects a bearer token and several `api/...` route shapes (including `/api/users/me`, event-scoped category/enrolment routes, and participant-specific results). The supplied API also has no Azure Blob upload endpoints or persisted image URL fields. These mismatches must be resolved and tested against the actual database/API contract before claiming the full Part 3 functionality is complete. See `docs/SUBMISSION-AUDIT.md` and `docs/API-VERIFICATION-CHECKLIST.md`.
 
-Important contract points:
-- Registration sends `FirstName`, `LastName`, `Email`, and `Password`; the plan does not list a role field.
-- Own profile uses `/api/users/me`.
-- Participant enrolments use `/api/enrolments`; event entry posts to `/api/events/{eventID}/enrolments`.
-- Result creation is `/api/enrolments/{enrolmentID}/results`; participant results are `/api/users/me/results`.
-- Category update/delete use `/api/categories/{categoryID}`.
+## Submission evidence still required
 
-The plan does not define upload or publish-result endpoints, so those controls were removed from the plan-aligned MVC UI.
+- Push all repository commits to the required GitHub remote and verify the history there (the included local Git history contains 20 commits before these integration changes).
+- Capture a screenshot of a successful GitHub Actions run after the push.
+- Record and add the unlisted YouTube demonstration URL showing MVC, API calls, authentication/roles, database operations, Azure Blob integration, Docker, and tests.
+- Verify the actual database connection and execute the end-to-end checks in the API verification checklist.
 
-## Part 2 feedback remediation checklist
-
-- [x] README with structure, Docker commands, CI + video placeholders
-- [x] CI workflow builds the MVC app, runs tests, and builds the Docker image (the API project is external)
-- [x] Expanded tests: authentication, resource endpoints, role enforcement
-- [ ] Push the included local commit history to your GitHub repository (20 commits are included in this archive)
-- [ ] CI screenshot + YouTube link added above
+Do not submit placeholder CI/video evidence as if it were completed.

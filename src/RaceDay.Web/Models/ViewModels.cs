@@ -49,6 +49,11 @@ public class EventFormVm
     [Display(Name = "Venue ID")]
     public int VenueId { get; set; }
 
+    [Range(0.1, 500, ErrorMessage = "Distance must be greater than zero.")]
+    public decimal DistanceKm { get; set; } = 5;
+
+    [Required, StringLength(100)]
+    public string EventType { get; set; } = "Road";
 }
 
 public class CategoryFormVm

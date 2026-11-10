@@ -1,21 +1,20 @@
 # API verification checklist
 
-Use the API's Swagger page and a clean test database. Mark an item only after observing the actual response.
+Run the Part 2 API with a valid SQL Server connection string and open its Swagger page in Development.
 
-- [ ] Register: valid account returns 201; duplicate email / invalid body returns validation error; verify password is hashed in storage.
-- [ ] Login: valid credentials return 200 and token; invalid credentials are rejected.
-- [ ] `GET /api/users/me`: anonymous request rejected; authenticated request returns own profile.
-- [ ] `PUT /api/users/me`: valid update persists; invalid email / duplicate email rejected.
-- [ ] `PUT /api/users/me/password`: wrong current password rejected; valid change works; old password no longer works.
-- [ ] Admin-only user detail/list endpoints reject non-admin users.
-- [ ] Events list/detail are public; event create/update/delete enforce Admin or Organiser.
-- [ ] Event category list/detail are public; category create/update/delete enforce Admin or Organiser.
-- [ ] Event enrolment creation is Participant-only; duplicate enrolment and invalid category are rejected.
-- [ ] Own enrolments and enrolment details enforce participant ownership; organiser/admin access follows the plan.
-- [ ] Enrolment status update enforces Admin or Organiser; cancellation enforces the listed roles.
-- [ ] Result create/update/delete enforce the roles in the plan; result lookups return the correct enrolment/event.
-- [ ] Event types list/detail are public; create/update/delete enforce Admin.
-- [ ] Test missing IDs, malformed bodies, FK/unique constraints, and persistence after restart.
-- [ ] Capture Swagger request/response evidence and include it in the submission.
+## Required integration checks
 
-Do not mark a check complete based only on a successful MVC page render; verify the API response and database effect.
+- [ ] Confirm API base URL and HTTPS certificate behavior from MVC.
+- [ ] Confirm registration request/response matches MVC `Register` flow.
+- [ ] Confirm login returns the token/user fields expected by MVC or update both sides to a single secure auth contract.
+- [ ] Confirm MVC bearer token is accepted by every protected API endpoint.
+- [ ] Confirm API route templates match `ApiRoutes.cs` exactly.
+- [ ] Confirm `/api/users/me` reads/updates only the authenticated user's own profile.
+- [ ] Confirm enrolment list and results are scoped to the authenticated participant.
+- [ ] Confirm event categories/enrolments/results are correctly scoped to the selected event.
+- [ ] Confirm Organiser-only endpoints reject Participants and unauthenticated requests.
+- [ ] Confirm event banner and profile-picture multipart uploads pass through the API to Azure Blob Storage and persist returned URLs.
+- [ ] Confirm MVC displays stored banner/profile image URLs.
+- [ ] Confirm Docker containers can reach SQL Server and each other.
+
+The supplied Part 2 source does not currently satisfy all these contract checks. Mark each item only after testing against the running API and database.
