@@ -1,12 +1,7 @@
 @model EventPageVm
 @{ ViewData["Title"] = "Results"; }
 <a asp-action="Dashboard" class="small">← Dashboard</a>
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="rd-h">Results <small class="text-muted">· @Model.Event.Name</small></h1>
-  <form asp-action="PublishResults" asp-route-id="@Model.Event.Id" method="post">
-    <button class="btn btn-rd" type="submit">Publish results</button>
-  </form>
-</div>
+<h1 class="rd-h">Results <small class="text-muted">· @Model.Event.Name</small></h1>
 <partial name="_ApiError" />
 @if (!Model.Enrolments.Any()) { <div class="alert alert-secondary">No participants to record results for.</div> }
 else
