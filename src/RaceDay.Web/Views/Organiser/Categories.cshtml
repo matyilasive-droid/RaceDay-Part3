@@ -11,7 +11,7 @@
         @foreach (var c in Model.Categories)
         {
           <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span><strong>@c.Name</strong> <span class="rd-chip ms-2">@c.Type</span></span>
+            <span><strong>@c.Name</strong> <span class="rd-chip ms-2">@c.DistanceKm km</span> <small class="text-muted">Max @c.MaxParticipants · @c.EntryFee.ToString("C")</small></span>
             <form asp-action="DeleteCategory" asp-route-id="@Model.Event.Id" asp-route-categoryId="@c.Id" method="post" class="m-0">
               <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
             </form>
@@ -24,9 +24,10 @@
     <div class="card rd-card p-3">
       <h2 class="rd-h h5">Add category</h2>
       <form asp-action="AddCategory" asp-route-id="@Model.Event.Id" method="post">
-        <div class="mb-2"><label class="form-label" for="Name">Name</label><input id="Name" name="Name" class="form-control" placeholder="e.g. Under 18, 10K, Masters 40+" required maxlength="60" /></div>
-        <div class="mb-3"><label class="form-label" for="Type">Type</label>
-          <select id="Type" name="Type" class="form-select"><option>Age</option><option>Distance</option></select></div>
+        <div class="mb-2"><label class="form-label" for="Name">Name</label><input id="Name" name="Name" class="form-control" placeholder="e.g. 5 km Open" required maxlength="60" /></div>
+        <div class="mb-2"><label class="form-label" for="DistanceKm">Distance (km)</label><input id="DistanceKm" name="DistanceKm" type="number" min="0.1" step="0.1" value="5" class="form-control" required /></div>
+        <div class="mb-2"><label class="form-label" for="MaxParticipants">Maximum participants</label><input id="MaxParticipants" name="MaxParticipants" type="number" min="1" value="100" class="form-control" required /></div>
+        <div class="mb-3"><label class="form-label" for="EntryFee">Entry fee</label><input id="EntryFee" name="EntryFee" type="number" min="0" step="0.01" value="0" class="form-control" required /></div>
         <button class="btn btn-rd" type="submit">Add</button>
       </form>
     </div>
