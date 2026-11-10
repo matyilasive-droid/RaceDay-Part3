@@ -15,9 +15,10 @@ public class OrganiserController : Controller
     // ---------- Dashboard ----------
     public async Task<IActionResult> Dashboard()
     {
-        var res = await _api.GetAsync<List<EventDto>>(ApiRoutes.MyEvents);
+        var res = await _api.GetAsync<List<EventDto>>(ApiRoutes.Events);
         if (!res.Success) ViewBag.Error = res.Error;
-        return View((res.Data ?? new()).OrderBy(e => e.Date).ToList());
+        var userId = HttpContext.Session.GetUser()!.UserId;
+        return View((res.Data ?? new()).Where(e => e.OrganiserId == userId).OrderBy(e => e.Date).ToList());
     }
 
     // ---------- Events CRUD ----------
@@ -27,7 +28,6 @@ public class OrganiserController : Controller
     [HttpPost]
     public async Task<IActionResult> CreateEvent(EventFormVm vm)
     {
-        if (vm.Banner is not null) ValidateBanner(vm);
         if (!ModelState.IsValid) return View("EventForm", vm);
 
         var res = await _api.PostAsync<EventDto>(ApiRoutes.Events, ToBody(vm));
@@ -37,9 +37,7 @@ public class OrganiserController : Controller
             return View("EventForm", vm);
         }
 
-        var bannerError = await UploadBannerAsync(res.Data.Id, vm.Banner);
         TempData["Success"] = "Event created.";
-        if (bannerError is not null) TempData["Error"] = "Event saved, but the banner failed: " + bannerError;
         return RedirectToAction(nameof(Dashboard));
     }
 
@@ -56,7 +54,7 @@ public class OrganiserController : Controller
         return View("EventForm", new EventFormVm
         {
             Id = e.Id, Name = e.Name, Description = e.Description, Date = e.Date,
-            Location = e.Location, DistanceKm = e.DistanceKm, EventType = e.EventType, BannerUrl = e.BannerUrl
+            VenueId = e.VenueId, DistanceKm = e.DistanceKm, EventType = e.EventType
         });
     }
 
@@ -64,7 +62,6 @@ public class OrganiserController : Controller
     public async Task<IActionResult> EditEvent(int id, EventFormVm vm)
     {
         vm.Id = id;
-        if (vm.Banner is not null) ValidateBanner(vm);
         if (!ModelState.IsValid) return View("EventForm", vm);
 
         var res = await _api.PutAsync<EventDto>(ApiRoutes.Event(id), ToBody(vm));
@@ -74,9 +71,7 @@ public class OrganiserController : Controller
             return View("EventForm", vm);
         }
 
-        var bannerError = await UploadBannerAsync(id, vm.Banner);
         TempData["Success"] = "Event updated.";
-        if (bannerError is not null) TempData["Error"] = "Event saved, but the banner failed: " + bannerError;
         return RedirectToAction(nameof(Dashboard));
     }
 
@@ -108,7 +103,7 @@ public class OrganiserController : Controller
             TempData["Error"] = "Please give the category a name.";
             return RedirectToAction(nameof(Categories), new { id });
         }
-        var res = await _api.PostAsync<CategoryDto>(ApiRoutes.EventCategories(id), new { form.Name, form.Type });
+        var res = await _api.PostAsync<CategoryDto>(ApiRoutes.EventCategories(id), new { form.Name, form.DistanceKm, form.MaxParticipants, form.EntryFee });
         if (res.Success) TempData["Success"] = "Category added.";
         else TempData["Error"] = res.Error ?? "Could not add the category.";
         return RedirectToAction(nameof(Categories), new { id });
@@ -163,18 +158,9 @@ public class OrganiserController : Controller
             return RedirectToAction(nameof(Results), new { id });
         }
 
-        var res = await _api.PostAsync<ResultDto>(ApiRoutes.EventResults(id), new { enrolmentId, finishTime = time, position });
+        var res = await _api.PostAsync<ResultDto>(ApiRoutes.EnrolmentResults(enrolmentId), new { finishTime = time, position });
         if (res.Success) TempData["Success"] = "Result saved.";
         else TempData["Error"] = res.Error ?? "Could not save the result.";
-        return RedirectToAction(nameof(Results), new { id });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> PublishResults(int id)
-    {
-        var res = await _api.PostAsync<object>(ApiRoutes.EventResultsPublish(id), null);
-        if (res.Success) TempData["Success"] = "Results published to participants.";
-        else TempData["Error"] = res.Error ?? "Could not publish results.";
         return RedirectToAction(nameof(Results), new { id });
     }
 
@@ -190,19 +176,6 @@ public class OrganiserController : Controller
         return new EventPageVm { Event = ev.Data };
     }
 
-    private void ValidateBanner(EventFormVm vm)
-    {
-        var problem = UploadValidator.Validate(vm.Banner);
-        if (problem is not null) ModelState.AddModelError(nameof(vm.Banner), problem);
-    }
-
-    private async Task<string?> UploadBannerAsync(int eventId, IFormFile? file)
-    {
-        if (file is null || file.Length == 0) return null;
-        var r = await _api.UploadAsync<UploadResponse>(ApiRoutes.EventBanner(eventId), file);
-        return r.Success ? null : r.Error ?? "Upload failed.";
-    }
-
     private static object ToBody(EventFormVm vm) =>
-        new { vm.Name, vm.Description, vm.Date, vm.Location, vm.DistanceKm, vm.EventType };
+        new { VenueID = vm.VenueId, vm.Name, Description = vm.Description, EventDate = vm.Date };
 }
