@@ -34,7 +34,7 @@ public class AccountController : Controller
 
         var auth = result.Data;
         HttpContext.Session.Clear(); // fresh session on login
-        HttpContext.Session.SetUser(new SessionUser(auth.Token, auth.UserId, auth.FullName, auth.Email, auth.Role, auth.ProfileImageUrl));
+        HttpContext.Session.SetUser(new SessionUser(auth.Token, auth.UserId, auth.FullName, auth.Email, auth.Role, null));
 
         if (Format.IsLocalUrl(vm.ReturnUrl)) return LocalRedirect(vm.ReturnUrl!);
         return RedirectToHome(auth.Role);
@@ -46,12 +46,10 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(RegisterVm vm)
     {
-        if (vm.Role is not ("Participant" or "Organiser"))
-            ModelState.AddModelError(nameof(vm.Role), "Please choose a valid account type.");
         if (!ModelState.IsValid) return View(vm);
 
         var result = await _api.PostAsync<object>(ApiRoutes.Register,
-            new { vm.FullName, vm.Email, vm.Password, vm.Role });
+            new { FirstName = vm.FirstName, LastName = vm.LastName, vm.Email, vm.Password });
         if (!result.Success)
         {
             ModelState.AddModelError("", result.Error ?? "Registration failed.");
