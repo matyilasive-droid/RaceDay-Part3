@@ -26,7 +26,7 @@ public class EventsController : Controller
     [HttpPost, SessionAuthorize(Role = "Participant")]
     public async Task<IActionResult> Enter(int id, int? categoryId)
     {
-        var res = await _api.PostAsync<EnrolmentDto>(ApiRoutes.EventEnrol(id), new { categoryId });
+        var res = await _api.PostAsync<EnrolmentDto>(ApiRoutes.EventEnrol(id), new { CategoryID = categoryId });
         if (res.Success)
         {
             TempData["Success"] = "You're in! Your entry has been submitted.";
