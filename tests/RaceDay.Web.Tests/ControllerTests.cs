@@ -97,7 +97,8 @@ public class ControllerTests
         var other = Ev(2, "B", "Road Run", 2); other.OrganiserId = "other";
         api.Responses[ApiRoutes.Events] = new List<EventDto> { own, other };
         var model = (List<EventDto>)((ViewResult)await Setup(new OrganiserController(api), Ctx.Organiser()).Dashboard()).Model!;
-        Assert.Equal("B", model[0].Name);
+        Assert.Equal("A", model[0].Name);
+        Assert.Single(model);
         Assert.Contains("GET " + ApiRoutes.Events, api.Calls);
     }
 

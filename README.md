@@ -1,7 +1,8 @@
-# RaceDay – Part 3 (ASP.NET Core MVC front end)
+# RaceDay — Part 3 (ASP.NET Core MVC front end)
 
-An ASP.NET Core 8 MVC web app for the RaceDay event platform. It consumes the **Part 2 REST API** for every
-data operation. There is **no DbContext, no database connection and no Azure SDK** in this project.
+An ASP.NET Core 8 MVC front end for the RaceDay event platform. It calls the separately deployed REST API over HTTP.
+The uploaded Part 3 ZIP does **not** contain the API implementation or database project; the API plan is used here as
+the client contract. There is no local DbContext or direct database connection in this MVC application.
 
 | | |
 |---|---|
@@ -34,8 +35,8 @@ RaceDay/
 Prerequisites: [.NET 8 SDK](https://dotnet.microsoft.com/download), VS Code + C# Dev Kit, and the Part 2 API running.
 
 ```bash
-# 1. start the Part 2 API (note its URL, e.g. http://localhost:5000)
-# 2. point the MVC app at it – edit src/RaceDay.Web/appsettings.json  ("Api": { "BaseUrl": ... })
+# Start the separately supplied API first (note its URL, e.g. http://localhost:5000).
+# Configure Api:BaseUrl in src/RaceDay.Web/appsettings.json or Api__BaseUrl environment variable.
 dotnet run --project src/RaceDay.Web
 # open http://localhost:5080
 ```
@@ -76,31 +77,26 @@ Browser ⇄ MVC (this repo) ──HTTP + JWT──▶ Part 2 API ──▶ Datab
 * **Blob Storage** – images are uploaded as multipart to the API (`/banner`, `/picture`); the API stores them in Azure Blob,
   saves the URL, and the MVC views render that URL. The MVC app never talks to Azure directly.
 
-## Part 2 API contract expected by the MVC app
+## API plan alignment
 
-All paths live in `src/RaceDay.Web/Services/ApiRoutes.cs`; DTO shapes in `Models/ApiModels.cs` (JSON is camelCase).
-**If your Part 2 API differs, change those two files only.**
+The client route helpers in `src/RaceDay.Web/Services/ApiRoutes.cs` follow the supplied `API PLAN.pdf`, Section B.
+The route-by-route mapping, request field alignment, plan ambiguities, and optional extensions are documented in
+[`docs/API-PLAN-ALIGNMENT.md`](docs/API-PLAN-ALIGNMENT.md). Use [`docs/API-VERIFICATION-CHECKLIST.md`](docs/API-VERIFICATION-CHECKLIST.md)
+to test the actual API in Swagger.
 
-| Purpose | Method & path | Notes |
-|---|---|---|
-| Register | `POST api/auth/register` | `{fullName,email,password,role}` |
-| Login | `POST api/auth/login` | → `{token,userId,fullName,email,role,profileImageUrl}` |
-| Events | `GET api/events`, `GET api/events/{id}` | list should include `categories` |
-| Organiser events | `GET api/events/mine` | includes `enrolmentCount` |
-| Event CRUD | `POST api/events`, `PUT/DELETE api/events/{id}` | |
-| Banner | `POST api/events/{id}/banner` (multipart `file`) | → `{url}` |
-| Categories | `GET/POST api/events/{id}/categories`, `DELETE .../categories/{cid}` | `{name,type}` |
-| Enter event | `POST api/events/{id}/enrol` | `{categoryId}` |
-| Event enrolments | `GET api/events/{id}/enrolments` | |
-| My enrolments | `GET api/enrolments/mine` | status Pending / Confirmed / Cancelled |
-| Results | `GET/POST api/events/{id}/results`, `POST .../results/publish` | `{enrolmentId,finishTime("hh:mm:ss"),position}` |
-| My results | `GET api/results/mine` | includes `position`, `totalFinishers` |
-| Profile | `GET/PUT api/profile`, `POST api/profile/picture` (multipart `file`) | |
+Important contract points:
+- Registration sends `FirstName`, `LastName`, `Email`, and `Password`; the plan does not list a role field.
+- Own profile uses `/api/users/me`.
+- Participant enrolments use `/api/enrolments`; event entry posts to `/api/events/{eventID}/enrolments`.
+- Result creation is `/api/enrolments/{enrolmentID}/results`; participant results are `/api/users/me/results`.
+- Category update/delete use `/api/categories/{categoryID}`.
+
+The plan does not define upload or publish-result endpoints, so those controls were removed from the plan-aligned MVC UI.
 
 ## Part 2 feedback remediation checklist
 
 - [x] README with structure, Docker commands, CI + video placeholders
-- [x] CI workflow builds API + MVC, runs tests, builds Docker image
+- [x] CI workflow builds the MVC app, runs tests, and builds the Docker image (the API project is external)
 - [x] Expanded tests: authentication, resource endpoints, role enforcement
-- [ ] 20+ meaningful commits pushed (see your git history)
+- [ ] Push the included local commit history to your GitHub repository (20 commits are included in this archive)
 - [ ] CI screenshot + YouTube link added above

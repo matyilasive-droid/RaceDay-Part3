@@ -15,14 +15,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build Part 2 API
-        run: |
-          if ls src/RaceDay.Api/*.csproj >/dev/null 2>&1; then
-            dotnet build src/RaceDay.Api --configuration Release
-          else
-            echo "::warning::No Part 2 API project found in src/RaceDay.Api"
-          fi
-
       - name: Restore MVC app
         run: dotnet restore RaceDay.sln
 

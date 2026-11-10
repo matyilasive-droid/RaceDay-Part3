@@ -18,6 +18,7 @@ public class CategoryDto
 {
     [JsonPropertyName("categoryID")]
     public int Id { get; set; }
+    [JsonPropertyName("eventID")]
     public int EventId { get; set; }
     public string Name { get; set; } = "";
     public decimal DistanceKm { get; set; }
@@ -29,7 +30,6 @@ public class EventDto
 {
     [JsonPropertyName("eventID")]
     public int Id { get; set; }
-    [JsonPropertyName("eventName")]
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
     [JsonPropertyName("eventDate")]
@@ -52,14 +52,20 @@ public class EnrolmentDto
 {
     [JsonPropertyName("enrolmentID")]
     public int Id { get; set; }
+    [JsonPropertyName("eventID")]
     public int EventId { get; set; }
+    [JsonPropertyName("eventName")]
     public string EventName { get; set; } = "";
+    [JsonPropertyName("eventDate")]
     public DateTime EventDate { get; set; }
+    [JsonPropertyName("userID")]
     public string ParticipantId { get; set; } = "";
     public string ParticipantName { get; set; } = "";
+    [JsonPropertyName("categoryID")]
     public int? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string Status { get; set; } = "Pending"; // Pending | Confirmed | Cancelled
+    [JsonPropertyName("enrolmentDate")]
     public DateTime EnrolledAt { get; set; }
 }
 
@@ -67,9 +73,13 @@ public class ResultDto
 {
     [JsonPropertyName("resultID")]
     public int Id { get; set; }
+    [JsonPropertyName("enrolmentID")]
     public int EnrolmentId { get; set; }
+    [JsonPropertyName("eventID")]
     public int EventId { get; set; }
+    [JsonPropertyName("eventName")]
     public string EventName { get; set; } = "";
+    [JsonPropertyName("eventDate")]
     public DateTime EventDate { get; set; }
     public string ParticipantName { get; set; } = "";
     public string? CategoryName { get; set; }
@@ -77,6 +87,7 @@ public class ResultDto
     public int Position { get; set; }
     public int TotalFinishers { get; set; }
     public bool Published { get; set; }
+    public DateTime? RecordedAt { get; set; }
 }
 
 public class ProfileDto

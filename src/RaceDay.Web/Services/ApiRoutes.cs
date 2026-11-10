@@ -20,6 +20,7 @@ public static class ApiRoutes
     public static string ChangePassword => "api/users/me/password";
     public static string Event(int eventId) => $"api/events/{eventId}";
     public static string EventEnrolments(int eventId) => $"api/events/{eventId}/enrolments";
+    public static string LegacyEventEnrolments(int eventId) => $"api/event/{eventId}/enrolments";
     public static string EventCategories(int eventId) => $"api/events/{eventId}/categories";
     public static string Category(int categoryId) => $"api/categories/{categoryId}";
     public static string EventCategory(int eventId, int categoryId) => Category(categoryId);

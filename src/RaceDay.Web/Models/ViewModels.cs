@@ -49,13 +49,6 @@ public class EventFormVm
     [Display(Name = "Venue ID")]
     public int VenueId { get; set; }
 
-    [Required, Range(0.1, 1000, ErrorMessage = "Distance must be between 0.1 and 1000 km."), Display(Name = "Distance (km)")]
-    public decimal DistanceKm { get; set; } = 5;
-
-    [Required, Display(Name = "Event type")]
-    public string EventType { get; set; } = "Road Run";
-
-    public static readonly string[] EventTypes = { "Road Run", "Trail Run", "Cycling", "Triathlon", "Swim", "Walk", "Other" };
 }
 
 public class CategoryFormVm

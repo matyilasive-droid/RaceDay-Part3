@@ -24,6 +24,7 @@ public class ApiPlanRouteTests
         Assert.Equal("api/categories/4", ApiRoutes.Category(4));
         Assert.Equal("api/events/12/enrolments", ApiRoutes.EventEnrol(12));
         Assert.Equal("api/events/12/enrolments", ApiRoutes.EventEnrolments(12));
+        Assert.Equal("api/event/12/enrolments", ApiRoutes.LegacyEventEnrolments(12));
     }
 
     [Fact]

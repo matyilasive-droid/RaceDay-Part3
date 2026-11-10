@@ -52,3 +52,46 @@ The MVC front end no longer calls banner upload, profile-picture upload, organis
 ## Verification status
 
 This is a front-end contract alignment, not proof that the remote API exists or that its database operations work. Run the MVC tests and exercise every endpoint against the actual API/Swagger instance before submission. Record status codes, valid/invalid requests, missing IDs, role failures, and persistence evidence.
+
+## Full Section B endpoint and role matrix
+
+| Method | Route | Required role | Request body from plan |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | `FirstName`, `LastName`, `Email`, `Password` |
+| POST | `/api/auth/login` | Public | `Email`, `Password` |
+| GET | `/api/users/me` | Authenticated | None |
+| PUT | `/api/users/me` | Authenticated | `FirstName`, `LastName`, `Email` |
+| PUT | `/api/users/me/password` | Authenticated | `currentPassword`, `newPassword`, `confirmPassword` |
+| GET | `/api/users/{userID}` | Admin | None |
+| GET | `/api/user` | Admin | None |
+| GET | `/api/events` | Public | None |
+| GET | `/api/events/{eventID}` | Public | None |
+| POST | `/api/events` | Admin, Organiser | `VenueID`, `Name`, `description`, `eventDate` |
+| PUT | `/api/events/{eventID}` | Admin, Organiser | `VenueID`, `Name`, `Description`, `eventDate` |
+| DELETE | `/api/events/{eventID}` | Admin, Organiser | None |
+| GET | `/api/events/{eventID}/enrolments` | Admin, Organiser | None |
+| GET | `/api/events/{eventID}/categories` | Public | None |
+| GET | `/api/categories/{CategoryID}` | Public | None |
+| POST | `/api/events/{EventID}/categories` | Admin, Organiser | `Name`, `DistanceKm`, `MaxParticipants`, `EntryFee` |
+| PUT | `/api/categories/{CategoryID}` | Admin, Organiser | `Name`, `DistanceKm`, `MaxParticipants`, `EntryFee` |
+| DELETE | `/api/categories/{CategoryID}` | Admin, Organiser | None |
+| POST | `/api/events/{EventID}/enrolments` | Participant | `CategoryID` |
+| GET | `/api/enrolments` | Participant | None |
+| GET | `/api/enrolments/{EnrolmentID}` | Participant, Admin, Organiser | None |
+| PUT | `/api/enrolments/{EnrolmentID}` | Admin, Organiser | `Status` |
+| DELETE | `/api/enrolments/{EnrolmentID}` | Participant, Admin, Organiser | None |
+| GET | `/api/event/{EventID}/enrolments` | Admin, Organiser | None (singular `/event` in plan) |
+| POST | `/api/enrolments/{EnrolmentID}/results` | Admin, Organiser | `FinishTime`, `Position` |
+| GET | `/api/results/{ResultID}` | Authenticated | None |
+| PUT | `/api/results/{ResultID}` | Admin, Organiser | `FinishTime`, `Position` |
+| DELETE | `/api/results/{ResultID}` | Admin | None |
+| GET | `/api/enrolments/{EnrolmentID}/result` | Participant, Admin, Organiser | None |
+| GET | `/api/events/{eventId}/results` | Admin, Organiser | None |
+| GET | `/api/users/me/results` | Participant | None |
+| GET | `/api/event-types` | Public | None |
+| GET | `/api/event-types/{eventTypesID}` | Public | None |
+| POST | `/api/event-types` | Admin | `EventName`, `EventType`, `Description`, `EventDate`, `Venue`, `City`, `StartTime`, `Status` |
+| PUT | `/api/event-types/{eventTypesID}` | Admin | Same event-type fields as POST |
+| DELETE | `/api/event-types/{eventTypesID}` | Admin | None |
+
+The route helper exposes the complete resource route set. The current MVC screens call only the subset needed by their workflows; endpoints without a corresponding screen remain documented and can be exercised directly in Swagger. The API itself must enforce every role in this table—the MVC session filter is only an additional presentation-layer guard.
