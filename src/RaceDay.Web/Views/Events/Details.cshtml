@@ -32,7 +32,7 @@
             <label class="form-label" for="categoryId">Category</label>
             <select id="categoryId" name="categoryId" class="form-select mb-3" required>
               <option value="">Choose your category…</option>
-              @foreach (var c in Model.Categories) { <option value="@c.Id">@c.Name (@c.Type)</option> }
+              @foreach (var c in Model.Categories) { <option value="@c.Id">@c.Name (@c.DistanceKm km)</option> }
             </select>
           }
           <button class="btn btn-rd w-100" type="submit">Enter Event</button>
