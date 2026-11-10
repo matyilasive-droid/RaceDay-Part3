@@ -5,28 +5,18 @@
 }
 <h1 class="rd-h">@ViewData["Title"]</h1>
 <div class="card rd-card p-4">
-  <form method="post" enctype="multipart/form-data" asp-action="@(editing ? "EditEvent" : "CreateEvent")" asp-route-id="@(editing ? (int?)Model.Id : null)">
+  <form method="post" asp-action="@(editing ? "EditEvent" : "CreateEvent")" asp-route-id="@(editing ? (int?)Model.Id : null)">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
     <div class="row">
       <div class="col-md-8 mb-3"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger small"></span></div>
-      <div class="col-md-4 mb-3">
-        <label asp-for="EventType" class="form-label"></label>
-        <select asp-for="EventType" class="form-select" asp-items="@(EventFormVm.EventTypes.Select(t => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(t, t)))"></select>
-      </div>
+
     </div>
     <div class="mb-3"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" rows="4" class="form-control"></textarea><span asp-validation-for="Description" class="text-danger small"></span></div>
     <div class="row">
       <div class="col-md-4 mb-3"><label asp-for="Date" class="form-label"></label><input asp-for="Date" class="form-control" /><span asp-validation-for="Date" class="text-danger small"></span></div>
-      <div class="col-md-5 mb-3"><label asp-for="Location" class="form-label"></label><input asp-for="Location" class="form-control" /><span asp-validation-for="Location" class="text-danger small"></span></div>
-      <div class="col-md-3 mb-3"><label asp-for="DistanceKm" class="form-label"></label><input asp-for="DistanceKm" class="form-control" step="0.1" /><span asp-validation-for="DistanceKm" class="text-danger small"></span></div>
+      <div class="col-md-5 mb-3"><label asp-for="VenueId" class="form-label"></label><input asp-for="VenueId" type="number" min="1" class="form-control" /><span asp-validation-for="VenueId" class="text-danger small"></span></div>
     </div>
-    <div class="mb-3">
-      <label asp-for="Banner" class="form-label"></label>
-      @if (!string.IsNullOrEmpty(Model.BannerUrl)) { <div class="mb-2"><img src="@Model.BannerUrl" class="rd-banner-lg" alt="Current banner" /></div> }
-      <input asp-for="Banner" type="file" accept="image/*" class="form-control" />
-      <div class="form-text">JPG, PNG, WEBP or GIF up to 5 MB. Uploaded via the RaceDay API to Azure Blob Storage.</div>
-      <span asp-validation-for="Banner" class="text-danger small"></span>
-    </div>
+
     <button class="btn btn-rd" type="submit">@(editing ? "Save changes" : "Create event")</button>
     <a class="btn btn-link" asp-action="Dashboard">Cancel</a>
   </form>
