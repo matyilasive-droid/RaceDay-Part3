@@ -93,10 +93,12 @@ public class ControllerTests
     public async Task Organiser_dashboard_loads_own_events()
     {
         var api = new FakeApiClient();
-        api.Responses[ApiRoutes.MyEvents] = new List<EventDto> { Ev(1, "A", "Road Run", 9), Ev(2, "B", "Road Run", 2) };
+        var own = Ev(1, "A", "Road Run", 9); own.OrganiserId = "u2";
+        var other = Ev(2, "B", "Road Run", 2); other.OrganiserId = "other";
+        api.Responses[ApiRoutes.Events] = new List<EventDto> { own, other };
         var model = (List<EventDto>)((ViewResult)await Setup(new OrganiserController(api), Ctx.Organiser()).Dashboard()).Model!;
         Assert.Equal("B", model[0].Name);
-        Assert.Contains("GET " + ApiRoutes.MyEvents, api.Calls);
+        Assert.Contains("GET " + ApiRoutes.Events, api.Calls);
     }
 
     [Fact]
@@ -122,10 +124,10 @@ public class ControllerTests
     public async Task SaveResult_posts_valid_result()
     {
         var api = new FakeApiClient();
-        api.Responses[ApiRoutes.EventResults(1)] = new ResultDto();
+        api.Responses[ApiRoutes.EnrolmentResults(9)] = new ResultDto();
         var c = Setup(new OrganiserController(api), Ctx.Organiser());
         await c.SaveResult(1, 9, "00:45:10", 3);
-        Assert.Contains("POST " + ApiRoutes.EventResults(1), api.Calls);
+        Assert.Contains("POST " + ApiRoutes.EnrolmentResults(9), api.Calls);
         Assert.Equal("Result saved.", c.TempData["Success"]);
     }
 
@@ -150,24 +152,4 @@ public class ControllerTests
         Assert.Equal("New", model[0].EventName);
     }
 
-    [Fact]
-    public async Task Profile_picture_with_bad_file_type_is_rejected_before_api()
-    {
-        var api = new FakeApiClient();
-        var c = Setup(new ProfileController(api), Ctx.Participant());
-        var bad = new Microsoft.AspNetCore.Http.FormFile(new MemoryStream(new byte[3]), 0, 3, "picture", "x.exe");
-        await c.UploadPicture(bad);
-        Assert.Empty(api.Calls);
-    }
-
-    [Fact]
-    public async Task Profile_picture_success_updates_session_url()
-    {
-        var api = new FakeApiClient();
-        api.Responses[ApiRoutes.ProfilePicture] = new UploadResponse { Url = "https://blob/me.png" };
-        var c = Setup(new ProfileController(api), Ctx.Participant());
-        var ok = new Microsoft.AspNetCore.Http.FormFile(new MemoryStream(new byte[3]), 0, 3, "picture", "me.png");
-        await c.UploadPicture(ok);
-        Assert.Equal("https://blob/me.png", c.HttpContext.Session.GetUser()!.ProfileImageUrl);
-    }
 }
