@@ -146,10 +146,12 @@ public class AuthAndRoleTests
     }
 
     [Fact]
-    public async Task Register_rejects_unknown_role()
+    public async Task Register_rejects_invalid_model_without_calling_api()
     {
         var api = new FakeApiClient();
-        var result = await MakeAccount(api).Register(new RegisterVm { FullName = "A", Email = "a@x.com", Password = "Password1", ConfirmPassword = "Password1", Role = "Admin" });
+        var controller = MakeAccount(api);
+        controller.ModelState.AddModelError("FirstName", "First name is required.");
+        var result = await controller.Register(new RegisterVm { FirstName = "", LastName = "User", Email = "a@x.com", Password = "Password1", ConfirmPassword = "Password1" });
         Assert.IsType<ViewResult>(result);
         Assert.Empty(api.Calls);
     }
