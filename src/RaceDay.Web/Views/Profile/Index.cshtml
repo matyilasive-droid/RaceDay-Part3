@@ -3,27 +3,15 @@
 <h1 class="rd-h">My Profile</h1>
 <partial name="_ApiError" />
 <div class="row g-4">
-  <div class="col-md-4">
-    <div class="card rd-card p-4 text-center">
-      @if (!string.IsNullOrEmpty(Model.ProfileImageUrl)) { <img src="@Model.ProfileImageUrl" class="rd-profile-pic mx-auto mb-3" alt="Profile picture" /> }
-      else { <div class="rd-profile-pic rd-banner-empty mx-auto mb-3"><span>@(Model.FullName.Length > 0 ? Model.FullName[..1] : "?")</span></div> }
-      <form asp-action="UploadPicture" method="post" enctype="multipart/form-data">
-        <input type="file" name="picture" accept="image/*" class="form-control mb-2" required />
-        <button class="btn btn-rd w-100" type="submit">Upload picture</button>
-      </form>
-    </div>
-  </div>
-  <div class="col-md-8">
+  <div class="col-md-12">
     <div class="card rd-card p-4">
       <form asp-action="Index" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
-        <input type="hidden" asp-for="ProfileImageUrl" />
-        <div class="mb-3"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control" /><span asp-validation-for="FullName" class="text-danger small"></span></div>
-        <div class="mb-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger small"></span></div>
         <div class="row">
-          <div class="col-md-6 mb-3"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger small"></span></div>
-          <div class="col-md-6 mb-3"><label asp-for="DateOfBirth" class="form-label"></label><input asp-for="DateOfBirth" class="form-control" /></div>
+          <div class="col-md-6 mb-3"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="text-danger small"></span></div>
+          <div class="col-md-6 mb-3"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger small"></span></div>
         </div>
+        <div class="mb-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger small"></span></div>
         <button class="btn btn-rd" type="submit">Save changes</button>
       </form>
     </div>
